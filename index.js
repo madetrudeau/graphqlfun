@@ -3,118 +3,101 @@ var { buildSchema, assertInputType } = require("graphql");
 var express = require("express");
 
 // Construct a schema, using GraphQL schema language
-var restaurants = [
+var contacts = [
   {
     id: 1,
-    name: "WoodsHill ",
-    description:
-      "American cuisine, farm to table, with fresh produce every day",
-    dishes: [
-      {
-        name: "Swordfish grill",
-        price: 27,
-      },
-      {
-        name: "Roasted Broccily ",
-        price: 11,
-      },
+    name: "peter parker",
+    age: 21,
+    email: "peter@mit.edu",
+    courses: [
+      { number: "1.00", name: "engr comp" },
+      { number: "3.00", name: "intro bio" },
     ],
   },
   {
     id: 2,
-    name: "Fiorellas",
-    description:
-      "Italian-American home cooked food with fresh pasta and sauces",
-    dishes: [
-      {
-        name: "Flatbread",
-        price: 14,
-      },
-      {
-        name: "Carbonara",
-        price: 18,
-      },
-      {
-        name: "Spaghetti",
-        price: 19,
-      },
+    name: "bruce wayne",
+    age: 32,
+    email: "bruce@mit.edu",
+    courses: [
+      { number: "2.00", name: "intro ME" },
+      { number: "3.00", name: "intro MS" },
     ],
   },
   {
     id: 3,
-    name: "Karma",
-    description:
-      "Malaysian-Chinese-Japanese fusion, with great bar and bartenders",
-    dishes: [
-      {
-        name: "Dragon Roll",
-        price: 12,
-      },
-      {
-        name: "Pancake roll ",
-        price: 11,
-      },
-      {
-        name: "Cod cakes",
-        price: 13,
-      },
+    name: "diana prince",
+    age: 25,
+    email: "diana@mit.edu",
+    courses: [
+      { number: "2.00", name: "intro arch" },
+      { number: "1.00", name: "intro chem" },
     ],
   },
 ];
 var schema = buildSchema(`
 type Query{
-  restaurant(id: Int): restaurant
-  restaurants: [restaurant]
+  contact(id: Int): Contact
+  contacts: [Contact]
 },
-type restaurant {
+type Contact {
   id: Int
   name: String
-  description: String
-  dishes:[Dish]
+  email: String
+  age: Int
+  courses:[Course]
 }
-type Dish{
+type Course{
+  number: String
   name: String
-  price: Int
 }
-input restaurantInput{
+input ContactInput{
+  id: Int
   name: String
-  description: String
+  email: String
+  age: Int
 }
 type DeleteResponse{
   ok: Boolean!
 }
 type Mutation{
-  setrestaurant(input: restaurantInput): restaurant
+  setContact(input: ContactInput): Contact
 
-  deleterestaurant(id: Int!): DeleteResponse
-  editrestaurant(id: Int!, name: String!): restaurant
+  deleteContact(id: Int!): DeleteResponse
+  editContact(id: Int!, age: Int!): Contact
 }
 `);
 // The root provides a resolver function for each API endpoint
 
 var root = {
-  restaurant: (arg) => restaurants[arg.id],
-  restaurants: () => restaurants,
-  setrestaurant: ({ input }) => {
-    restaurants.push({ name: input.name, description: input.description });
+  contact: (arg) => contacts[arg.id],
+  contacts: () => contacts,
+  setContact: ({ input }) => {
+    let id = Math.max(...contacts.map(o => o.id)) + 1;
+    contacts.push({
+      id: id,
+      name: input.name,
+      email: input.email,
+      age: input.age,
+    });
     return input;
   },
-  deleterestaurant: ({ id }) => {
-    const ok = Boolean(restaurants[id]);
-    let delc = restaurants[id];
-    restaurants = restaurants.filter((item) => item.id !== id);
+  deleteContact: ({ id }) => {
+    const ok = Boolean(contacts[id]);
+    let delc = contacts[id];
+    contacts = contacts.filter((item) => item.id !== id);
     console.log(JSON.stringify(delc));
     return { ok };
   },
-  editrestaurant: ({ id, ...restaurant }) => {
-    if (!restaurants[id]) {
-      throw new Error("restaurant doesn't exist");
+  editContact: ({ id, ...contact }) => {
+    if (!contacts[id]) {
+      throw new Error("contact doesn't exist");
     }
-    restaurants[id] = {
-      ...restaurants[id],
-      ...restaurant,
+    contacts[id] = {
+      ...contacts[id],
+      ...contact,
     };
-    return restaurants[id];
+    return contacts[id];
   },
 };
 var app = express();
@@ -126,5 +109,5 @@ app.use(
     graphiql: true,
   })
 );
-var port = 5500;
-app.listen(5500, () => console.log("Running Graphql on Port:" + port));
+var port = 4000;
+app.listen(4000, () => console.log("Running Graphql on Port:" + port));
